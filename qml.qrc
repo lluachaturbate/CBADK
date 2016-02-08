@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>ActionRect.qml</file>
+        <file>Appsets.qml</file>
+        <file>CamRect.qml</file>
+        <file>ChatRect.qml</file>
+        <file>SplitterDel.qml</file>
+        <file>images.duckduckgo.com.jpeg</file>
+    </qresource>
+</RCC>
