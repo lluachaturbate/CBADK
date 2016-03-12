@@ -2,41 +2,34 @@
 App Dev Kit for Chaturbate
 
 
-#### Why i did this?
-While the testbed is a good thing to do design and final tests it's not really handy while developing apps.
+#### What is this?
+Well the name says it all: This tool is supposed to help develop and test Apps for CB.
+I decided to not attempt to make a website copy of CB and build features around it, instead i did my own implementation to realize feautures that i think are important.
+Unfortunately the CB API didn't gave me much to work with, so i filled the gaps with tests and guesswork.
 
-Especially when people aren't writing javascript code on a daily basis they make a lot of mistakes or want to test every new little piece of code. With the amount of time it takes to upload and start apps on the testbed you end up spending less than half of the time on coding.
 
-
-
-#### Take into consideration
-* This is not made to be visually compatible with chaturbate. I tried to make it look close, that's it.
-  * The font slider is there for a reason tho: Broadcasters usually increase the fontsize by a lot - think of that when spamming notices.
-* I coded this on a day off quickly, **dirty**, without a design idea and without testing - educated guess: There is a bug somewhere.
-* There is no guarantee that anything that works here will work on chaturbate. All i did is based on the API documentation and guesswork. Always do your final tests on the testbed!
+#### Feautures
+* All API functions.
+* Multi-User support.
+  * You can create users and get the POV of the user you select (notices, cam etc.)  
+  * You can act as any user at any time (chat, tip, enter/leave room etc.)
+* Debugger
+* Easy chat fontsize adjustment
+  * As a broadcaster i can tell you a lot of us **greatly** increase the fontsize since we usually sit between 1m and 5m away from the screen.
+  * Notice-spamming or real big notices fill up the whole chat window disturbingly often, so you should think of (and test) that while developing.
+* Code warnings.
+  * Let's face it, the CB appengine has a few flaws. I attempt to give warnings if your code does something stupid.
 
 
 
 #### Make it better
-Don't hesitate to report bugs and make feature/pull requests. I originally did this for myself and didn't intend to fit the needs of everyone.
+Don't hesitate to report bugs, make feature/pull requests or [mail me](mailto:llua.chaturbate@gmail.com). I originally did this for myself and didn't intend to fit the needs of everyone.
 
 
-
-##### TODO
-I usually don't make GUIs so contribution from someone fluent with QML would be nice. Don't hesitate to make a rework.
-Doxygen and my QML mess should give you enough info to do it.
-
-
-##### Install
-It only depends on [Qt](https://www.qt.io/) so all that is needed is
+##### Compile
 ```
 qmake && make
 ```
-Since Windows-people usually don't like to compile things i put up a release file. It's just **blindly** cross compiled with MXE and never tested. If it doesn't work just get Qt and compile it yourself, it's maybe 10clicks and a coffee.
-
-
-##### Usage
-It should be pretty forward,:
-* Load your app code.
-  * since there is no server the combobox at the top controls *your view* of the chat and cam.
-  * create viewers and events (chat, tip, enter, leave) with the controls in the lower right.
+It is completely portable and only depends on [Qt](https://www.qt.io/) to build.
+ * Windows 
+  * Since Windows-people usually don't like to compile things i put up a release file. It's just **blindly** cross compiled with MXE and never tested. If it doesn't work just get Qt and compile it yourself, it's maybe 10clicks and a coffee. There is no knowledge of C++ required to complie and run a project (a chimpanse can do it).

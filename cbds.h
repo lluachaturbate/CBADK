@@ -2,56 +2,79 @@
 #define CBDS_H
 
 #include <QObject>
-#include <QJSEngine>
+#include <QScriptEngine>
+#include <QScriptEngineDebugger>
 #include <QFile>
-#include <QUrl>
+#include <QFileInfo>
 
-#include "cbobject.h"
 #include "chatmodel.h"
-#include "users.h"
+#include "viewermodel.h"
+#include "cbobjectimpl.h"
+#include "cbjsobject.h"
 
-//! Basically the main object. Responsible for creation and connection of the rest and loading apps.
+#include "viewerchatmodel.h"
+
+//! The main object. Holds the models, loads scripts and creates event objects.
 class CBDS : public QObject
 {
     Q_OBJECT
-    //! Pointer to the chatmodel for qml
-    Q_PROPERTY(ChatModel* chat READ getChat CONSTANT)
-    //! Pointer to the usermodel for qml
-    Q_PROPERTY(Users* users READ getUsers CONSTANT)
-    //!Pointer to the current cb object. Will change on every appload. @sa load
-    Q_PROPERTY(CBObject* cbobj READ getCBObj NOTIFY cbObjChanged)
+    Q_PROPERTY(ViewerModel* viewers READ getViewerModel CONSTANT)
+    Q_PROPERTY(ViewerChatModel* chat READ getViewerChatModel CONSTANT)
+    Q_PROPERTY(CBObjectImpl* cb READ getCBObject CONSTANT)
 public:
     explicit CBDS(QObject *parent = 0);
 
-    //! Opens filename and creates a new QJSEngine as well as CBObject. @sa startApp @note My wild guess is that when you upload a script CB just executes it with a dummy cb object to save the settings_choices array in a database which will later be used to fill the settings object upon starting an app. So that is what i gonna imitate here.
-    Q_INVOKABLE bool load(const QUrl& filename);
+    //! Loads the script specified by filename with an CBObjectBase object. @returns QVariant(QVariantList) of the settings_choices object or an invalid QVariant on error.
+    QVariant getSettingsFromScript(const QString& filename);
 
-    //! Creates a new QJSEngine and CBObject with given settings and executes the app
-    Q_INVOKABLE bool startApp(const QUrl& filename, const QJsonObject& settings);
+    //! Resets and sets settings of the CBObject and loads the script specified by filename. @returns false on any error.
+    bool startApp(const QString& filename, const QVariant& settings);
 
+    //! Adds a Viewer to the model
+    Q_INVOKABLE Viewer *addViewer(const QString& username, const int& tips=0, const bool& in_fanclub=0, const bool& is_mod=0, const bool& has_tokens=0, const char& gender='m');
 
-    ChatModel* getChat() {return &m_chat;} //!< Returns the chatmodel
-    Users* getUsers() {return &m_users;} //!< Returns the usermodel
-    CBObject* getCBObj() {return m_cbo;} //!< Returns the CBObject
+    //! Decides if the chat is cleared upon loading a new app.
+    void setClearChatStart(const bool& clear) {m_clearchatonstart = clear;}
 
-    //! Creates a new User and adds it to the usermodel as well as connecting its signals
-    Q_INVOKABLE User* addUser(const QString& name, const int& tipped=0, const bool& in_fanclub=0, const bool& is_mod=0, const bool& has_tokens=0, const QString &gender="m");
-
+    ViewerModel *getViewerModel() {return &m_viewers;}
+    ViewerChatModel *getViewerChatModel() {return &m_viewerchat;}
+    CBObjectImpl* getCBObject() {return m_cbo;}
+    QScriptEngineDebugger* debugger() {return &m_debugger;}
 private:
+    QScriptEngine m_engine;
+    QScriptEngineDebugger m_debugger;
+    CBJSObject m_cbjso;
+    CBObjectImpl *m_cbo;
+    ViewerModel m_viewers;
     ChatModel m_chat;
-    Users m_users;
-    QJSEngine *m_appengine = Q_NULLPTR;
+    ViewerChatModel m_viewerchat;
+    bool m_clearchatonstart = false;
 
-    CBObject *m_cbo = Q_NULLPTR;
-
-    User* connectUser(User* u);
+    Viewer* connectViewer(Viewer * v);
+    QScriptValue createViewerValue(Viewer *v);
 
 signals:
-    void uiRequest(QJsonArray settings_choices); //!< Requests a UI to start an app
-    void cbObjChanged(); //!< Emitted when a new app is loaded to inform the UI
-    void error(QString msg); //!< Emitted on any error
+    //! Emitted on any error thats not scriptrelated.
+    void error(QString msg);
 
-public slots:
+private slots:
+    //! Creates a tip object and calls CBObjectImpl::callTipFunction(). @warning needs Viewer* as sender()
+    void onTip(const int& amount, const QString& message);
+    //! Creates a message object and calls CBObjectImpl::callMessageFunction(). @warning needs Viewer* as sender()
+    void onChat(const QString& message);
+    //! Creates a enter object and calls CBObjectImpl::callEnterFunction(). @warning needs Viewer* as sender()
+    void onEnter();
+    //! Creates a leave object and calls CBObjectImpl::callLeaveFunction(). @warning needs Viewer* as sender()
+    void onLeave();
+    //! Adds a notice ChatLine to the model.
+    void onAppNotice(const QString &message, const QString &to_user ="", const QString &background = "#FFFFFF", const QString &foreground = "#000000", const QString &weight="normal", const QString &to_group ="");
+    //! Adds a logmessage ChatLine to the model.
+    void onCbLog(const QString& message);
+    //! Adds a roomsubject change ChatLine to the model.
+    void onRoomSubjectChanged(const QString &new_subject);
+    //! Sets the viewers limitcam access to allowed.
+    void onLimitCamAccessChanged(const QString& name, const bool& allowed);
+
 };
 
 #endif // CBDS_H

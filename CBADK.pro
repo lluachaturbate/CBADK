@@ -1,24 +1,31 @@
+QT       += core gui qml quick quickwidgets script scripttools
+CONFIG  += c++11
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+TARGET = CBADK
 TEMPLATE = app
 
-QT += qml quick widgets
-CONFIG += c++11
 
-SOURCES += main.cpp \
-    cbds.cpp \
-    cbobject.cpp \
-    chatmessage.cpp \
+SOURCES += main.cpp\
+        gui.cpp \
+    viewer.cpp \
     chatmodel.cpp \
-    user.cpp \
-    users.cpp
+    viewermodel.cpp \
+    cbobjectimpl.cpp \
+    cbds.cpp
 
-RESOURCES += qml.qrc
-
-
-HEADERS += \
-    cbds.h \
-    cbobject.h \
-    chatmessage.h \
+HEADERS  += gui.h \
+    chatline.h \
+    viewer.h \
     chatmodel.h \
-    user.h \
-    users.h
+    viewermodel.h \
+    cbobjectbase.h \
+    cbobjectimpl.h \
+    cbjsobject.h \
+    cbds.h \
+    viewerchatmodel.h \
+    settingsdialog.h
 
+RESOURCES += \
+    qml.qrc

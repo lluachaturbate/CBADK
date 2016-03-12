@@ -1,11 +1,11 @@
 <RCC>
     <qresource prefix="/">
-        <file>main.qml</file>
-        <file>ActionRect.qml</file>
-        <file>Appsets.qml</file>
-        <file>CamRect.qml</file>
-        <file>ChatRect.qml</file>
-        <file>SplitterDel.qml</file>
-        <file>images.duckduckgo.com.jpeg</file>
+        <file>qml/AppPanel.qml</file>
+        <file>qml/CamRect.qml</file>
+        <file>qml/main.qml</file>
+        <file>qml/TipPopup.qml</file>
+        <file>qml/NewViewerPop.qml</file>
+        <file>qml/ChatRect.qml</file>
+        <file>qml/cam.jpeg</file>
     </qresource>
 </RCC>
