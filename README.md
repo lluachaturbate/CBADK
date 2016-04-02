@@ -7,6 +7,10 @@ Well the name says it all: This tool is supposed to help develop and test Apps f
 I decided to not attempt to make a website copy of CB and build features around it, instead i did my own implementation to realize feautures that i think are important.
 Unfortunately the CB API didn't gave me much to work with, so i filled the gaps with tests and guesswork.
 
+#### Who is this for?
+Originally for me since the old ADK linked in the CB API is outdated and misses a lot of feautures.
+I make barely everything i code open source so others can profit from it.
+Doesn't matter if you are a beginner or a pro, you should be able to work fine with this.
 
 #### Feautures
 * All API functions.
@@ -17,6 +21,8 @@ Unfortunately the CB API didn't gave me much to work with, so i filled the gaps 
 * Easy chat fontsize adjustment
   * As a broadcaster i can tell you a lot of us **greatly** increase the fontsize since we usually sit between 1m and 5m away from the screen.
   * Notice-spamming or real big notices fill up the whole chat window disturbingly often, so you should think of (and test) that while developing.
+* Image support (without animations)
+  * ":whatever" will load "Images/whatever.(jpg/png/gif)"
 * Code warnings.
   * Let's face it, the CB appengine has a few flaws. I attempt to give warnings if your code does something stupid.
 

@@ -13,6 +13,8 @@ void CBObjectImpl::drawPanel()
         if (!ret.isError())
         {
             QVariant v = ret.toVariant();
+            if (engine() && !ret.isUndefined() && (QStringList() << "3_rows_of_labels" << "3_rows_11_21_31" << "3_rows_12_21_31" << "3_rows_12_22_31").indexOf(v.toMap().value("template").toString()) == -1)
+                    context()->throwError(QScriptContext::ReferenceError, "cb.onDrawPanel(): Unknown template: " + v.toMap().value("template").toString());
             if (v == m_lastdraw)
                 emit warning("cb.drawPanel(): Called without any data changed. You just sent a completely useless command to 150000 viewers. And no, please don't ask me why CB isn't filtering it (last time i checked).");
             else
@@ -92,9 +94,9 @@ void CBObjectImpl::log(QScriptValue val)
 {
     QString s;
     if (val.isArray())
-        s = QString("[Array (%1)]: %2").arg(val.toVariant().value<QVariantList>().size()).arg(QString(QJsonDocument::fromVariant(val.toVariant()).toJson(QJsonDocument::Compact)));
+        s = QString("[Array (%1)]: %2").arg(val.toVariant().toList().size()).arg(QString(QJsonDocument::fromVariant(val.toVariant()).toJson(QJsonDocument::Compact)));
     else if (val.isObject() && !val.isFunction() && !val.isQObject())
-        s = QString("[Object (%1)]: %2").arg(val.toVariant().value<QVariantMap>().size()).arg(QString(QJsonDocument::fromVariant(val.toVariant()).toJson(QJsonDocument::Compact)));
+        s = QString("[Object (%1)]: %2").arg(val.toVariant().toMap().size()).arg(QString(QJsonDocument::fromVariant(val.toVariant()).toJson(QJsonDocument::Compact)));
     else
         s = val.toString();
     emit cbLog(s);

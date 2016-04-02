@@ -40,7 +40,6 @@ GUI::GUI(QWidget *parent)
     m_quickui.setMinimumHeight(250);
     setCentralWidget(&m_quickui);
     qmlRegisterType<Viewer>();
-    m_quickui.setSource(QUrl("qrc:/qml/main.qml"));
 
 
     QMenu *menu = new QMenu("App", this);
@@ -66,6 +65,9 @@ GUI::GUI(QWidget *parent)
     m_clearaction->setCheckable(true);
     connect(m_clearaction, &QAction::triggered, [&] (bool checked) {m_cbds.setClearChatStart(checked);});
     menuBar()->addMenu(settings);
+    m_resolveimagesaction = settings->addAction("Load Images from \"Image\" subfolder");
+    m_resolveimagesaction->setCheckable(true);
+    connect(m_resolveimagesaction, &QAction::triggered, [&] (bool checked) {m_cbds.getChatModel()->setResolveImages(checked);});
 
     QMenu* about = new QMenu("About", this);
     connect(about->addAction("About CBADK"), &QAction::triggered, [&]
@@ -99,6 +101,7 @@ GUI::GUI(QWidget *parent)
 
     createDockWidgets();
     loadSettings();
+    m_quickui.setSource(QUrl("qrc:/qml/main.qml"));
 }
 
 GUI::~GUI()
@@ -108,6 +111,7 @@ GUI::~GUI()
 
 bool GUI::loadSettings()
 {
+    m_quickui.rootContext()->setContextProperty("CamImagePath", "cam.jpeg");
     if (QFile::exists(m_settingsfile))
     {
         QSettings sets(m_settingsfile, QSettings::IniFormat, this);
@@ -117,6 +121,13 @@ bool GUI::loadSettings()
         bool clearchatonstart = sets.value("CBDS/ClearChatOnStart", false).toBool();
         m_clearaction->setChecked(clearchatonstart);
         m_cbds.setClearChatStart(clearchatonstart);
+        bool resimg = sets.value("CBDS/ResolveImages", false).toBool();
+        m_resolveimagesaction->setChecked(resimg);
+        m_cbds.getChatModel()->setResolveImages(resimg);
+
+        QString campath = sets.value("GUI/Camimage").toString();
+        if (!campath.isEmpty())
+            m_quickui.rootContext()->setContextProperty("CamImagePath", QFile::exists(campath) ? QUrl::fromLocalFile(campath) : campath);
         return true;
     }
     resize(1300,600);
@@ -132,6 +143,7 @@ void GUI::saveSettings()
         sets.setValue("GUI/Geometry", saveGeometry());
         sets.setValue("GUI/State", saveState());
         sets.setValue("CBDS/ClearChatOnStart", m_clearaction->isChecked());
+        sets.setValue("CBDS/ResolveImages", m_resolveimagesaction->isChecked());
     }
 }
 

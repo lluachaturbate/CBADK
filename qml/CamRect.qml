@@ -93,7 +93,7 @@ Rectangle {
             anchors {fill: parent}
             mipmap: true;
             fillMode: Image.PreserveAspectFit;
-            source: "cam.jpeg";
+            source: CamImagePath;
         }
     }
 

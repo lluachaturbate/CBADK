@@ -35,8 +35,12 @@ public:
     //! Deletes all ChatLines in the model.
     void clear();
 
+    //! Decides if :text should be replaced with an <img> tag.
+    void setResolveImages(bool resolve) {if (m_resolveimages != resolve) {m_resolveimages = resolve; beginResetModel(); endResetModel();}}
+
 private:
     QList<ChatLine *> m_chatlines;
+    bool m_resolveimages = false;
 
 public slots:
     //! Emits QAbstractItemModel::dataChanged() to update views. @warning Expects Viewer* as sender().

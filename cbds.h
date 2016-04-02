@@ -38,6 +38,7 @@ public:
 
     ViewerModel *getViewerModel() {return &m_viewers;}
     ViewerChatModel *getViewerChatModel() {return &m_viewerchat;}
+    ChatModel *getChatModel() {return &m_chat;}
     CBObjectImpl* getCBObject() {return m_cbo;}
     QScriptEngineDebugger* debugger() {return &m_debugger;}
 private:

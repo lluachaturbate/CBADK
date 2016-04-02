@@ -15,7 +15,7 @@ QVariant ChatModel::data(const QModelIndex &index, int role) const
         case To: return m_chatlines.at(index.row())->getVisibleTo();
         case Weight: return m_chatlines.at(index.row())->getWeight();
         case Tip: return m_chatlines.at(index.row())->getTipAmount();
-        case Line: return m_chatlines.at(index.row())->getLine();
+        case Line: return m_chatlines.at(index.row())->getLine(m_resolveimages);
     }
     return QVariant();
 }

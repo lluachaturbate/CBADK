@@ -38,6 +38,7 @@ private:
     QString m_lastscriptfolder, m_settingsfile = QApplication::applicationDirPath() + "/CBADK.ini";
     QMenu* m_reloadmenu, *m_viewmenu;
     QAction* m_clearaction;
+    QAction* m_resolveimagesaction;
     QDockWidget* m_warningdock;
     QSet<QString> m_lastapps;
     bool m_save = true;
