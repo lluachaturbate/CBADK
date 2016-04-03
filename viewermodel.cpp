@@ -33,3 +33,50 @@ Viewer *ViewerModel::getViewerByName(const QString &name) const
             return (*i);
     return Q_NULLPTR;
 }
+
+QVariantList ViewerModel::serializeViewers() const
+{
+    QVariantList a;
+    for (auto i = m_viewers.constBegin(); i != m_viewers.constEnd(); ++i)
+    {
+        Viewer def("def");
+        QVariantMap o;
+        o.insert("name", (*i)->getName());
+        if (def.getGender() != (*i)->getGender())
+            o.insert("gender", (*i)->getGender());
+        if (def.getTipped() != (*i)->getTipped())
+            o.insert("tipped", (*i)->getTipped());
+        if (def.getFont() != (*i)->getFont())
+            o.insert("font", (*i)->getFont());
+        if (def.getTextcolor() != (*i)->getTextcolor())
+            o.insert("textcolor", (*i)->getTextcolor());
+        if (def.hasTokens() != (*i)->hasTokens())
+            o.insert("hastokens", (*i)->hasTokens());
+        if (def.isModerator() != (*i)->isModerator())
+            o.insert("mod", (*i)->isModerator());
+        if (def.isFanclubmember() != (*i)->isFanclubmember())
+            o.insert("fanclub", (*i)->isFanclubmember());
+        if (def.isRoomOwner() != (*i)->isRoomOwner())
+            o.insert("roomowner", (*i)->isRoomOwner());
+        a.append(o);
+    }
+    return a;
+}
+
+void ViewerModel::populate(QList<Viewer*> l)
+{
+    beginResetModel();
+    for (auto i = m_viewers.constBegin(); i != m_viewers.constEnd(); ++i)
+        (*i)->deleteLater();
+    m_viewers.clear();
+    QStringList names = m_reserved_names.toList();
+    for (auto i = l.constBegin(); i != l.constEnd(); ++i)
+    {
+        if (names.contains((*i)->getName()))
+            break;
+        names << (*i)->getName();
+        (*i)->setParent(this);
+        m_viewers << (*i);
+    }
+    endResetModel();
+}

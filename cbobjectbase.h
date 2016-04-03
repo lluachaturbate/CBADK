@@ -12,7 +12,7 @@ class CBObjectBase : public QObject, public QScriptable
 {
     Q_OBJECT
     //! A variable that contains the name of the current room. This can be used to determine if a message is being sent by the broadcaster.
-    Q_PROPERTY(QString room_slug READ getRoomSlug CONSTANT)
+    Q_PROPERTY(QString room_slug READ getRoomSlug NOTIFY room_slugChanged)
 
     //! Set this variable in order to have a form filled out by the broadcaster before the app is launched.\n \code{.js} cb.settings_choices = [{name:'tokens_per_minute_to_be_king', type:'int',minValue:1, maxValue:99, defaultValue:5, label: "Tokens per Minute"},{name:'remove_king_when', type:'choice',choice1:'someone else outbids',choice2:'score decays to 0', defaultValue:'someone else outbids'}];\endcode \n For each name in cb.settings_choices, there will be a value loaded in cb.settings. For the example above, there will be a cb.settings.remove_king_when variable.\n Field Types\li int\li str\li choice\n You may add as many choices as needed. The next choice would be choice3, followed by choice4, etc. \n Optional fields\li All fields accept a required: false parameter which makes them become optional.\li All fields accept a label: "Some String" field. This will be the display name for the field as shown in the final rendered form.\li All fields accept a defaultValue: parameter.
     Q_PROPERTY(QScriptValue settings_choices READ getSettingsChoices WRITE setSettingsChoices)
@@ -26,7 +26,8 @@ public:
         m_settings = e->newObject();
         m_settings_choices = e->newArray();
     }
-    
+    CBObjectBase(QScriptEngine *e, const QString& room_slug, QObject *parent = 0) : CBObjectBase(e, parent) {setRoomSlug(room_slug);}
+
     //! This function is only available to apps, not bots. Requests that all users reload the panel (the HTML info area below the cam). The contents of the panel are controlled by cb.onDrawPanel(func).
     Q_INVOKABLE void drawPanel() {}
 
@@ -80,6 +81,7 @@ public:
 
 
     QString getRoomSlug() const {return m_room_slug;}
+    void setRoomSlug(const QString& name) {if (name != m_room_slug) {m_room_slug = name; emit room_slugChanged(name);}}
 
     QScriptValue getSettings() const {return m_settings;}
     void setSettings(const QScriptValue& settings) {m_settings = settings;}
@@ -233,11 +235,15 @@ public:
     }
 
 
+
 protected:
     QString m_room_slug = "llua";
     QScriptValue m_settings_choices, m_settings;
 
 signals:
+    //! Emitted when the room_slug changes
+    void room_slugChanged(QString room_slug);
+
     //! Emitted on all warnings. @note Those are mostly bad coding style warnings.
     void warning(QString msg);
 

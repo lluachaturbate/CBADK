@@ -13,8 +13,9 @@ class SettingsDialog : public QDialog
 {
     Q_OBJECT
 public:
-    SettingsDialog(const QVariant& choices, QWidget* parent = 0) : QDialog(parent)
+    SettingsDialog(const QVariant& choices, const QVariant& lastchoices, QWidget* parent = 0) : QDialog(parent)
     {
+        QVariantMap lastsettings = lastchoices.toMap();
         m_startbutton = new QPushButton(this);
         m_startbutton->setText("Start App");
         connect(m_startbutton, &QPushButton::clicked, this, &SettingsDialog::accept);
@@ -27,8 +28,9 @@ public:
         for (int i = 0; i < a.size(); ++i)
         {
             QVariantMap object = a.at(i).toMap();
+            QString name = object.value("name").toString();
             bool required = object.value("required", true).toBool();
-            QString label = object.value("label", object.value("name")).toString();
+            QString label = object.value("label", name).toString();
             if (required)
                 label += "*";
             QString type = object.value("type").toString();
@@ -45,7 +47,9 @@ public:
                 {
                     QLineEdit *e = new QLineEdit(this);
                     e->setValidator(new QIntValidator(object.value("minValue", -999999).toInt(), object.value("maxValue", 9999999).toInt(), e));
-                    if (object.value("defaultValue").isValid())
+                    if (lastsettings.contains(name))
+                        e->insert(lastsettings.value(name).toString());
+                    else if (object.value("defaultValue").isValid())
                         e->setText(object.value("defaultValue").toString());
 
                     connect(e, &QLineEdit::textEdited, [=] () {
@@ -66,7 +70,10 @@ public:
                 case STRING:
                 {
                     QLineEdit *e = new QLineEdit(this);
-                    e->setText(object.value("defaultValue").toString());
+                    if (lastsettings.contains(name))
+                        e->setText(lastsettings.value(name).toString());
+                    else
+                        e->setText(object.value("defaultValue").toString());
                     e->setMaxLength(object.value("maxLength", 32767).toInt());
                     if (required)
                     {
@@ -83,13 +90,15 @@ public:
                     QStringList cl = object.keys().filter("choice");
                     for (auto i = cl.constBegin(); i != cl.constEnd(); ++i)
                         b->addItem(object.value((*i)).toString());
-                    if (object.contains("defaultValue"))
+                    if (lastsettings.contains(name) && b->findText(lastsettings.value(name).toString()) != -1)
+                        b->setCurrentText(lastsettings.value(name).toString());
+                    else if (object.contains("defaultValue"))
                         b->setCurrentText(object.value("defaultValue").toString());
                     w = b;
                     break;
                 }
             }
-            w->setProperty("settingname", object.value("name"));
+            w->setProperty("settingname", name);
             w->setToolTip(QString(QJsonDocument::fromVariant(object).toJson(QJsonDocument::Indented)));
             l->addRow(label, w);
         }

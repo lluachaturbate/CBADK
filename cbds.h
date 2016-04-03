@@ -6,6 +6,7 @@
 #include <QScriptEngineDebugger>
 #include <QFile>
 #include <QFileInfo>
+#include <QApplication>
 
 #include "chatmodel.h"
 #include "viewermodel.h"
@@ -36,6 +37,9 @@ public:
     //! Decides if the chat is cleared upon loading a new app.
     void setClearChatStart(const bool& clear) {m_clearchatonstart = clear;}
 
+    //! Populates the ViewerModel with Viewers created from the json data.
+    void parseViewerData(const QVariantList& data);
+
     ViewerModel *getViewerModel() {return &m_viewers;}
     ViewerChatModel *getViewerChatModel() {return &m_viewerchat;}
     ChatModel *getChatModel() {return &m_chat;}
@@ -50,9 +54,12 @@ private:
     ChatModel m_chat;
     ViewerChatModel m_viewerchat;
     bool m_clearchatonstart = false;
+    QString m_roomowner = "llua";
 
     Viewer* connectViewer(Viewer * v);
     QScriptValue createViewerValue(Viewer *v);
+
+    void setRoomOwner(const QString& slug) {m_roomowner = slug; m_cbo->setRoomSlug(slug);}
 
 signals:
     //! Emitted on any error thats not scriptrelated.
@@ -76,6 +83,12 @@ private slots:
     //! Sets the viewers limitcam access to allowed.
     void onLimitCamAccessChanged(const QString& name, const bool& allowed);
 
+public slots:
+    //! If Viewers.json exists loads users from that file. @return true if loaded. @sa saveViewers()
+    void loadViewers();
+
+    //! Saves Viewers to Viewers.json.
+    void saveViewers();
 };
 
 #endif // CBDS_H

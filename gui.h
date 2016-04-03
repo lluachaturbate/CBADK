@@ -41,7 +41,10 @@ private:
     QAction* m_resolveimagesaction;
     QDockWidget* m_warningdock;
     QSet<QString> m_lastapps;
+    QHash<QString, QVariant> m_lastsettingchoices;
     bool m_save = true;
+
+
 
 
     //! If settingsfile exists loads geometry, state and last script folder. @return true if settings loaded. @sa saveSettings().
@@ -59,6 +62,8 @@ private:
 private slots:
     //! If sender() has a filename property loads it, otherwise opens a filedialog.
     void onLoadApp();
+    //! Saves Viewers to Viewers.json.
+    void saveViewers();
 };
 
 #endif // GUI_H

@@ -2,8 +2,6 @@
 
 CBDS::CBDS(QObject *parent) : QObject(parent)
 {
-    Viewer*l = addViewer("llua", 0, 0, 0, 1, 'c');
-    l->setRoomOwner(true);
     m_cbo = new CBObjectImpl(&m_engine, this);
     m_viewerchat.setSourceModel(&m_chat);
     m_debugger.attachTo(&m_engine);
@@ -35,7 +33,7 @@ QVariant CBDS::getSettingsFromScript(const QString &filename)
 
         QScriptContext *ctx = m_engine.pushContext();
         CBJSObject js;
-        CBObjectBase cbo(&m_engine);
+        CBObjectBase cbo(&m_engine, m_roomowner);
         ctx->activationObject().setProperty("cb", m_engine.newQObject(&cbo));
         ctx->activationObject().setProperty("cbjs", m_engine.newQObject(&js));
         QScriptValue ret = m_engine.evaluate(appcode, QFileInfo(filename).fileName());
@@ -88,6 +86,41 @@ Viewer *CBDS::addViewer(const QString &username, const int &tips, const bool &in
     emit error("Can't add \"" + username + "\". Name already exists or is reserved.");
     nv->deleteLater();
     return v;
+}
+
+void CBDS::parseViewerData(const QVariantList &data)
+{
+    Viewer def("def");
+    QList<Viewer*> list;
+    bool ownerset = false;
+    for (auto i = data.constBegin(); i != data.constEnd(); ++i)
+    {
+        QVariantMap o = (*i).toMap();
+        Viewer *v = new Viewer(o.value("name").toString(), o.value("tipped", def.getTipped()).toInt(), o.value("fanclub", def.isFanclubmember()).toBool(), o.value("mod", def.isModerator()).toBool(), o.value("hastokens", def.hasTokens()).toBool(), o.value("gender", def.getGender()).toString().at(0).toLatin1());
+        if (o.value("roomowner", false).toBool())
+        {
+            if (!ownerset)
+            {
+                v->setRoomOwner(true);
+                setRoomOwner(v->getName());
+                ownerset = true;
+            }
+            else
+                emit error(QString("Can't have more than 1 room owner. Owner: \"%1\" second: \"%2\"").arg(m_roomowner, v->getName()));
+        }
+        list << v;
+    }
+    m_viewers.populate(list);
+    for (auto i = list.constBegin(); i != list.constEnd(); ++i)
+    {
+        if ((*i)->parent())
+            connectViewer((*i));
+        else
+        {
+            emit error("Can't add \"" + (*i)->getName() + "\". Name already exists or is reserved.");
+            (*i)->deleteLater();
+        }
+    }
 }
 
 Viewer *CBDS::connectViewer(Viewer *v)
@@ -206,4 +239,43 @@ void CBDS::onLimitCamAccessChanged(const QString &name, const bool &allowed)
     Viewer* v = m_viewers.getViewerByName(name);
     if (v)
         v->setLimitCamAccess(allowed);
+}
+
+void CBDS::loadViewers()
+{
+    QFile f(QApplication::applicationDirPath() + "/Viewers.json");
+    if (f.exists())
+    {
+        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            QJsonParseError pe;
+            QVariantList json = QJsonDocument::fromJson(f.readAll(), &pe).toVariant().toList();
+            f.close();
+            if (pe.error == QJsonParseError::NoError)
+                parseViewerData(json);
+            else
+                emit error("Failed to parse Viewers.json: " + pe.errorString());
+        }
+        else
+            emit error("Can't open file: " + f.fileName());
+    }
+
+    if (!m_viewers.rowCount(QModelIndex()))
+    {
+        Viewer* l = addViewer("llua", 0, 0, 0, 1, 'c');
+        l->setRoomOwner(true);
+        setRoomOwner("llua");
+    }
+}
+
+void CBDS::saveViewers()
+{
+    QFile f(QApplication::applicationDirPath() + "/Viewers.json");
+    if (f.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate))
+    {
+        f.write(QJsonDocument::fromVariant(m_viewers.serializeViewers()).toJson(QJsonDocument::Indented));
+        f.close();
+    }
+    else
+        emit error("Can't open file: " + f.fileName());
 }

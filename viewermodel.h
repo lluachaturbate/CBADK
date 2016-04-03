@@ -26,6 +26,12 @@ public:
     //! @returns Viewer* with the given name or Q_NULLPTR if no such Viewer exists.
     Viewer* getViewerByName(const QString& name) const;
 
+    //! @returns a JSON compatible VariantList of all viewers with their non-default values.
+    QVariantList serializeViewers() const;
+
+    //! Resets the model with the viewers provided.
+    void populate(QList<Viewer*> l);
+
 private:
     QList<Viewer *> m_viewers;
 

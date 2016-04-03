@@ -64,10 +64,48 @@ GUI::GUI(QWidget *parent)
     m_clearaction = settings->addAction("Clear chat on app start");
     m_clearaction->setCheckable(true);
     connect(m_clearaction, &QAction::triggered, [&] (bool checked) {m_cbds.setClearChatStart(checked);});
-    menuBar()->addMenu(settings);
     m_resolveimagesaction = settings->addAction("Load Images from \"Image\" subfolder");
     m_resolveimagesaction->setCheckable(true);
     connect(m_resolveimagesaction, &QAction::triggered, [&] (bool checked) {m_cbds.getChatModel()->setResolveImages(checked);});
+    QMenu* defviewers = settings->addMenu("Default Viewers");
+    connect(defviewers->addAction("Make current viewers the default"), &QAction::triggered, this, &GUI::saveViewers);
+    connect(defviewers->addAction("Load default viewers"), &QAction::triggered, &m_cbds, &CBDS::loadViewers);
+    connect(settings->addAction("Clear previous choices of app settings"), &QAction::triggered, [&] {m_lastsettingchoices.clear();});
+    menuBar()->addMenu(settings);
+
+    QMenu *help = new QMenu("Help", this);
+    connect(help->addAction("Debugger manual"), &QAction::triggered, [] () {QDesktopServices::openUrl(QUrl("http://doc.qt.io/qt-4.8/qtscriptdebugger-manual.html"));});
+    connect(help->addAction("Default viewers"), &QAction::triggered, [&]
+    {
+        Viewer def("defaultviewer");
+        QVariantList a;
+        QVariantMap o;
+        o.insert("name", def.getName());
+        o.insert("gender", def.getGender());
+        o.insert("tipped", def.getTipped());
+        o.insert("font", def.getFont());
+        o.insert("textcolor", def.getTextcolor());
+        o.insert("hastokens", def.hasTokens());
+        o.insert("mod", def.isModerator());
+        o.insert("fanclub", def.isFanclubmember());
+        o.insert("roomowner", def.isRoomOwner());
+        a.append(o);
+        QVariantMap o2;
+        o2.insert("name", "llua");
+        o2.insert("gender", "c");
+        o2.insert("roomowner", true);
+        a.append(o2);
+        QString t = QString(QJsonDocument::fromVariant(a).toJson(QJsonDocument::Indented)).replace("\n", "<br>").replace(": ", ": &nbsp;&nbsp;&nbsp;&nbsp;").replace(" ", "&nbsp;");
+        QMessageBox m(this);
+        m.setStandardButtons(QMessageBox::Close);
+        m.setTextFormat(Qt::RichText);
+        m.setWindowTitle("Default viewers");
+        m.setText("<p>You can set default users by either clicking on \"<b>Settings -> Default viewers -> Make current viewers the default\"</b><br>or creating a file named \"Viewers.json\" next to the binary.</p><p>The format of the file is a JSON array <b>(not an object)</b> containing viewer objects.</p><p>Only the \"name\" property is required, every other field is optional and will load the defaults shown in the example \"defaultviewer\" below.<br>Also 1 object has to have property \"roomowner\" set to true.</p><p><b>" + t + "</b></p>");
+        m.setIcon(QMessageBox::Information);
+        m.exec();
+    });
+    connect(help->addAction("Change webcam image"), &QAction::triggered, [&] {QMessageBox::information(this, "Instructions", "<p>Open the \"<b>CBADK.ini</b>\" file (located next to the binary after you ran it once) and add the following line in the \"<b>GUI</b>\" section:</p><p><code>Camimage=/path/to/image.jpg</code></p><p><i>Urls are supported as well.</i></p>", QMessageBox::Close);});
+    menuBar()->addMenu(help);
 
     QMenu* about = new QMenu("About", this);
     connect(about->addAction("About CBADK"), &QAction::triggered, [&]
@@ -128,6 +166,9 @@ bool GUI::loadSettings()
         QString campath = sets.value("GUI/Camimage").toString();
         if (!campath.isEmpty())
             m_quickui.rootContext()->setContextProperty("CamImagePath", QFile::exists(campath) ? QUrl::fromLocalFile(campath) : campath);
+
+        m_cbds.loadViewers();
+
         return true;
     }
     resize(1300,600);
@@ -145,6 +186,17 @@ void GUI::saveSettings()
         sets.setValue("CBDS/ClearChatOnStart", m_clearaction->isChecked());
         sets.setValue("CBDS/ResolveImages", m_resolveimagesaction->isChecked());
     }
+}
+
+
+void GUI::saveViewers()
+{
+    QMessageBox::StandardButton proceed = QMessageBox::Yes;
+    QFile f(QApplication::applicationDirPath() + "/Viewers.json");
+    if (f.exists(QApplication::applicationDirPath() + "/Viewers.json"))
+        proceed = QMessageBox::question(this, "Warning", "This will override \"" + f.fileName() + "\". \n Proceed?", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    if (proceed == QMessageBox::Yes)
+        m_cbds.saveViewers();
 }
 
 void GUI::addToReloadMenu(const QString &filename)
@@ -256,9 +308,13 @@ void GUI::onLoadApp()
         {
             if (!settings.toList().isEmpty())
             {
-                SettingsDialog s(settings, this);
+                SettingsDialog s(settings, m_lastsettingchoices.value(filename), this);
                 if (s.exec() == QDialog::Accepted)
-                    m_cbds.startApp(filename, s.getSettings());
+                {
+                    QVariant sets = s.getSettings();
+                    m_lastsettingchoices.insert(filename, sets);
+                    m_cbds.startApp(filename, sets);
+                }
             }
             else
                 m_cbds.startApp(filename, settings);

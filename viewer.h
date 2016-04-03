@@ -41,6 +41,7 @@ public:
     int getTipped() const {return m_tipped;}
     bool getDebugReadable() const {return m_debug;}
     bool hasLimitCamAccess() const {return m_limitcam;}
+    bool isRoomOwner() const {return m_roomowner;}
 
     void setModerator(const bool& is_moderator) {if (m_moderator != is_moderator) {m_moderator = is_moderator; emit dataChanged();}}
     void setFanclubmember(const bool& in_fanclub) {if (m_fanclubmember != in_fanclub) {m_fanclubmember = in_fanclub; emit dataChanged();}}
@@ -48,7 +49,9 @@ public:
     void setGender(const QString& gender) {char g = gender.toLatin1().at(0); if (m_gender != g) {m_gender = g; emit dataChanged();}}
     void setDebugReadable(const bool& on) {if (m_debug != on) {m_debug = on; emit dataChanged();}}
     void setLimitCamAccess(const bool& allow) {if (m_limitcam != allow) {m_limitcam = allow; emit dataChanged();}}
-    void setRoomOwner(const bool& owns) {m_roomowner = owns;}
+    void setRoomOwner(const bool& owns) {if (owns != m_roomowner) {m_roomowner = owns; emit dataChanged();}}
+    void setTextcolor(const QString& c) {if (m_textcolor != c) {m_textcolor = c; emit dataChanged();}}
+    void setFont(const QString& f) {if (m_font != f) {m_font = f; emit dataChanged();}}
 
 private:
     QString m_name, m_font = "default", m_textcolor = "#000000";

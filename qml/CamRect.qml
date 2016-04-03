@@ -21,8 +21,8 @@ Rectangle {
             anchors {fill: parent; margins: 10;}
             verticalAlignment: Text.AlignVCenter;
             clip: true;
-            text: "Llua's room";
-            Connections {target: backend.cb; onChangeRoomSubject: roomsubjecttext.text = new_subject ? new_subject : "Llua's room";}
+            text: backend.cb.room_slug + "'s room";
+            Connections {target: backend.cb; onChangeRoomSubject: roomsubjecttext.text = new_subject ? new_subject : backend.cb.room_slug + "'s room";}
         }
         MouseArea {
             id: roomsubjectmouse;
