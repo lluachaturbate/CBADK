@@ -29,7 +29,7 @@ public:
     //! @returns a JSON compatible VariantList of all viewers with their non-default values.
     QVariantList serializeViewers() const;
 
-    //! Resets the model with the viewers provided.
+    //! Resets the model with the viewers provided. @warning Some names are reserved and duplicates aren't allowed. Viewers that fail those restrictions won't be added and parented.
     void populate(QList<Viewer*> l);
 
 private:

@@ -52,6 +52,7 @@ Rectangle {
                 ctok.checked = uiroot.currentViewer.has_tokens;
                 backend.chat.setViewer(uiroot.currentViewer);
             }
+            Connections {target: backend.viewers; onModelReset: {viewercombo.currentIndex = -1; viewercombo.currentIndex = viewercombo.currentIndex = 0;}}
         }
         Button{text: "+"; onClicked: newviewerpopup.showHide();}
     }

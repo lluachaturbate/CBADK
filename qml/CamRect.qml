@@ -51,7 +51,7 @@ Rectangle {
         id: cam;
         anchors {top: roomsubjectrect.bottom; left: parent.left; right: parent.right; bottom: panel.top; leftMargin: 5; rightMargin: 5;}
         color: "black";
-        state: limitcamactive ? uiroot.currentViewer.limitcamaccess  || uiroot.currentViewer.name === backend.cb.room_slug ? "" : "hidden" : "";
+        state: limitcamactive ? uiroot.currentViewer.limitcamaccess  || uiroot.currentViewer.roomowner ? "" : "hidden" : "";
 
         property bool limitcamactive: false;
 

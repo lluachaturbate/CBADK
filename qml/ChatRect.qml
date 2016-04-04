@@ -33,7 +33,7 @@ Rectangle {
                     y: 1;
                     width: chatlv.width;
                     wrapMode: Text.Wrap;
-                    text: model.tip && message ? uiroot.currentViewer.moderator || uiroot.currentViewer.name === backend.cb.room_slug ? line + " -- " + message : line : line;
+                    text: model.tip && message ? uiroot.currentViewer.moderator || uiroot.currentViewer.roomowner ? line + " -- " + message : line : line;
                     color: model.foreground;
                     font.weight: boldy();
                     font.letterSpacing: model.weight === "bolder" ? .5 : 0;

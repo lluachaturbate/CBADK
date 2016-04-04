@@ -14,6 +14,7 @@ class Viewer : public QObject
     Q_PROPERTY(QString gender READ getGender WRITE setGender NOTIFY dataChanged)
     Q_PROPERTY(int tipped READ getTipped NOTIFY dataChanged)
     Q_PROPERTY(bool limitcamaccess READ hasLimitCamAccess NOTIFY dataChanged)
+    Q_PROPERTY(bool roomowner READ isRoomOwner NOTIFY dataChanged)
 public:
     explicit Viewer(const QString& username, const int& tips=0, const bool& in_fanclub=0, const bool& is_mod=0, const bool& has_tokens=0, const char& gender='m', QObject *parent = 0);
 

@@ -43,7 +43,7 @@ GUI::GUI(QWidget *parent)
 
 
     QMenu *menu = new QMenu("App", this);
-    menu->addAction("Load App", this, SLOT(onLoadApp()));
+    menu->addAction("Load App", this, SLOT(onLoadApp()))->setShortcut(QKeySequence("Ctrl+L"));
     m_reloadmenu = menu->addMenu("Reload App");
     menuBar()->addMenu(menu);
 
@@ -66,14 +66,61 @@ GUI::GUI(QWidget *parent)
     connect(m_clearaction, &QAction::triggered, [&] (bool checked) {m_cbds.setClearChatStart(checked);});
     m_resolveimagesaction = settings->addAction("Load Images from \"Image\" subfolder");
     m_resolveimagesaction->setCheckable(true);
+    m_resolveimagesaction->setShortcut(QKeySequence("Ctrl+I"));
     connect(m_resolveimagesaction, &QAction::triggered, [&] (bool checked) {m_cbds.getChatModel()->setResolveImages(checked);});
+    QAction* clearchoices = settings->addAction("Clear previous choices of app settings");
+    clearchoices->setShortcut(QKeySequence("Ctrl+W"));
+    connect(clearchoices, &QAction::triggered, [&] {m_previousstartoptions.clear();});
+    connect(settings->addAction("Change webcam image"), &QAction::triggered, [&]
+    {
+        QString orgname = m_quickui.rootContext()->contextProperty("CamImagePath").toString();
+        QString fname;
+        QDialog d(this);
+        QFormLayout lay;
+        QPushButton open("Browse", &d);
+        connect(&open, &QPushButton::clicked, [&]
+        {
+            fname = QFileDialog::getOpenFileName(this, "Choose an image", "", "Image files (*.jpg *.jpeg *.png *.gif *.bmp)");
+            if (!fname.isEmpty())
+                m_quickui.rootContext()->setContextProperty("CamImagePath", QUrl::fromLocalFile(fname));
+        });
+        lay.addRow(new QLabel("Open a local file:", &d), &open);
+        QLineEdit urledit(&d);
+        connect(&urledit, &QLineEdit::textChanged, [&] (const QString& text) {fname = text;});
+        lay.addRow(new QLabel("Enter a URL:"), &urledit);
+        QPushButton reset("Reset to default", &d);
+        connect(&reset, &QPushButton::clicked, [&] {fname.clear(); d.accept();});
+        lay.addRow(new QLabel("Or just:", &d), &reset);
+        QPushButton apply("Apply", &d);
+        connect(&apply, &QPushButton::clicked, [&] {d.accept();});
+        QPushButton cancel("Cancel", &d);
+        connect(&cancel, &QPushButton::clicked, [&] {d.reject();});
+        lay.addRow(&apply, &cancel);
+        d.setLayout(&lay);
+        if (d.exec() == QDialog::Accepted)
+        {
+            QSettings sets(m_settingsfile, QSettings::IniFormat, this);
+            if (!fname.isEmpty())
+            {
+                m_quickui.rootContext()->setContextProperty("CamImagePath", QFile::exists(fname) ? QUrl::fromLocalFile(fname) : fname);
+                sets.setValue("GUI/Camimage", fname);
+            }
+            else
+            {
+                m_quickui.rootContext()->setContextProperty("CamImagePath", "cam.jpeg");
+                sets.remove("GUI/Camimage");
+            }
+        }
+        else
+            m_quickui.rootContext()->setContextProperty("CamImagePath", orgname);
+    });
     QMenu* defviewers = settings->addMenu("Default Viewers");
     connect(defviewers->addAction("Make current viewers the default"), &QAction::triggered, this, &GUI::saveViewers);
     connect(defviewers->addAction("Load default viewers"), &QAction::triggered, &m_cbds, &CBDS::loadViewers);
-    connect(settings->addAction("Clear previous choices of app settings"), &QAction::triggered, [&] {m_lastsettingchoices.clear();});
     menuBar()->addMenu(settings);
 
     QMenu *help = new QMenu("Help", this);
+    connect(help->addAction("FAQ"), &QAction::triggered, [] {QDesktopServices::openUrl(QUrl("https://github.com/lluachaturbate/CBADK/wiki/FAQ"));});
     connect(help->addAction("Debugger manual"), &QAction::triggered, [] () {QDesktopServices::openUrl(QUrl("http://doc.qt.io/qt-4.8/qtscriptdebugger-manual.html"));});
     connect(help->addAction("Default viewers"), &QAction::triggered, [&]
     {
@@ -104,7 +151,6 @@ GUI::GUI(QWidget *parent)
         m.setIcon(QMessageBox::Information);
         m.exec();
     });
-    connect(help->addAction("Change webcam image"), &QAction::triggered, [&] {QMessageBox::information(this, "Instructions", "<p>Open the \"<b>CBADK.ini</b>\" file (located next to the binary after you ran it once) and add the following line in the \"<b>GUI</b>\" section:</p><p><code>Camimage=/path/to/image.jpg</code></p><p><i>Urls are supported as well.</i></p>", QMessageBox::Close);});
     menuBar()->addMenu(help);
 
     QMenu* about = new QMenu("About", this);
@@ -201,10 +247,16 @@ void GUI::saveViewers()
 
 void GUI::addToReloadMenu(const QString &filename)
 {
-    m_lastapps << filename;
+    m_lastapps.removeAll(filename);
+    m_lastapps.prepend(filename);
     m_reloadmenu->clear();
     for (auto i = m_lastapps.constBegin(); i != m_lastapps.constEnd(); ++i)
-        m_reloadmenu->addAction(QFileInfo((*i)).fileName(), this, SLOT(onLoadApp()))->setProperty("filename", (*i));
+    {
+        QAction* a = m_reloadmenu->addAction(QFileInfo((*i)).fileName(), this, SLOT(onLoadApp()));
+        a->setProperty("filename", (*i));
+        if (i == m_lastapps.constBegin())
+            a->setShortcut(QKeySequence("Ctrl+R"));
+    }
 }
 
 void GUI::createDockWidgets()
@@ -308,11 +360,11 @@ void GUI::onLoadApp()
         {
             if (!settings.toList().isEmpty())
             {
-                SettingsDialog s(settings, m_lastsettingchoices.value(filename), this);
+                SettingsDialog s(settings, settings == m_previousstartoptions.value(filename).first ? m_previousstartoptions.value(filename).second : QVariant(), this);
                 if (s.exec() == QDialog::Accepted)
                 {
                     QVariant sets = s.getSettings();
-                    m_lastsettingchoices.insert(filename, sets);
+                    m_previousstartoptions.insert(filename, QPair<QVariant, QVariant>(settings, sets));
                     m_cbds.startApp(filename, sets);
                 }
             }

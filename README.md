@@ -12,6 +12,7 @@ Originally for me since the old ADK linked in the CB API is outdated and misses 
 I make barely everything i code open source so others can profit from it.
 Doesn't matter if you are a beginner or a pro, you should be able to work fine with this.
 
+
 #### Feautures
 * All API functions.
 * Multi-User support.
@@ -32,10 +33,10 @@ Doesn't matter if you are a beginner or a pro, you should be able to work fine w
 Don't hesitate to report bugs, make feature/pull requests or [mail me](mailto:llua.chaturbate@gmail.com). I originally did this for myself and didn't intend to fit the needs of everyone.
 
 
-##### Compile
+#### Compile
+It is completely portable and only depends on [Qt](https://www.qt.io/) to build.
 ```
 qmake && make
 ```
-It is completely portable and only depends on [Qt](https://www.qt.io/) to build.
  * Windows 
   * Since Windows-people usually don't like to compile things i put up a release file. It's just **blindly** cross compiled with MXE and never tested. If it doesn't work just get Qt and compile it yourself, it's maybe 10clicks and a coffee. There is no knowledge of C++ required to complie and run a project (a chimpanse can do it).

@@ -15,6 +15,8 @@
 #include <QSettings>
 #include <QDesktopServices>
 #include <QMessageBox>
+#include <QLabel>
+#include <QPushButton>
 
 #include "cbds.h"
 #include "settingsdialog.h"
@@ -40,8 +42,8 @@ private:
     QAction* m_clearaction;
     QAction* m_resolveimagesaction;
     QDockWidget* m_warningdock;
-    QSet<QString> m_lastapps;
-    QHash<QString, QVariant> m_lastsettingchoices;
+    QStringList m_lastapps;
+    QHash<QString, QPair<QVariant, QVariant> > m_previousstartoptions;
     bool m_save = true;
 
 

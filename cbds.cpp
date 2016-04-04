@@ -110,6 +110,14 @@ void CBDS::parseViewerData(const QVariantList &data)
         }
         list << v;
     }
+
+    if (!ownerset && !list.isEmpty())
+    {
+        list.first()->setRoomOwner(true);
+        setRoomOwner(list.first()->getName());
+        emit error("No Viewer is set as the room owner. Automatically set \"" + list.first()->getName() + "\" as the owner.");
+    }
+
     m_viewers.populate(list);
     for (auto i = list.constBegin(); i != list.constEnd(); ++i)
     {

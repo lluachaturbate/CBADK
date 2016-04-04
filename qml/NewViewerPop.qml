@@ -47,6 +47,7 @@ Rectangle {
             text: "Create";
             onClicked: {
                 backend.addViewer(namefield.text, tippedspin.value, cfc.checked, cmod.checked, cht.checked, genderbox.currentText.charCodeAt(0));
+                viewercombo.currentIndex = backend.viewers.rowCount() -1;
                 showHide();
             }
         }
