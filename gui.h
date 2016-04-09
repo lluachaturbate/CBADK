@@ -17,6 +17,7 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QPushButton>
+#include <QFontDialog>
 
 #include "cbds.h"
 #include "settingsdialog.h"

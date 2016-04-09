@@ -57,7 +57,7 @@ GUI::GUI(QWidget *parent)
     menuBar()->addMenu(dmenu);
 
     QMenu* settings = new QMenu("Settings", this);
-    QAction* sa = settings->addAction("Save GUI settings");
+    QAction* sa = settings->addAction("Save settings on exit");
     sa->setCheckable(true);
     sa->setChecked(m_save);
     connect(sa, &QAction::triggered, [&] (bool checked) {m_save = checked;});
@@ -117,6 +117,7 @@ GUI::GUI(QWidget *parent)
     QMenu* defviewers = settings->addMenu("Default Viewers");
     connect(defviewers->addAction("Make current viewers the default"), &QAction::triggered, this, &GUI::saveViewers);
     connect(defviewers->addAction("Load default viewers"), &QAction::triggered, &m_cbds, &CBDS::loadViewers);
+    connect(settings->addAction("Change Codewidget font"), &QAction::triggered, [&] {QWidget *cw = findChild<QWidget *>("DbgCode"); if (cw) cw->setFont(QFontDialog::getFont(0, cw->font()));});
     menuBar()->addMenu(settings);
 
     QMenu *help = new QMenu("Help", this);
@@ -160,7 +161,7 @@ GUI::GUI(QWidget *parent)
         m.setStandardButtons(QMessageBox::Close);
         m.setTextFormat(Qt::RichText);
         m.setWindowTitle("About");
-        m.setText("<p align='center'>This project exists out of pure neccessarity.</p><p align='center'>I wanted to make my own app and since im terrible with JS i couldn't code without having a useful way of testing.<br>I didn't want to copy the CB site because i wanted some kind of multi-user support to test real use scenarios.</p><p align='center'>If you find any bugs or miss any functionality head over to <a href='https://github.com/lluachaturbate/CBADK'>github</a></p>.");
+        m.setText("<p align='center'>This project only exists because i thought something like this is necessary.</p><p align='center'>I wanted to make my own app and since im terrible with JS i couldn't code without having a useful way of testing.<br>I didn't want to copy the CB site because i wanted some kind of multi-user support to test real use scenarios.</p><p align='center'>If you find any bugs or miss any functionality head over to <a href='https://github.com/lluachaturbate/CBADK'>github</a></p>.");
         m.setIcon(QMessageBox::Information);
         m.exec();
     });
@@ -195,6 +196,7 @@ GUI::~GUI()
 
 bool GUI::loadSettings()
 {
+    m_cbds.loadViewers();
     m_quickui.rootContext()->setContextProperty("CamImagePath", "cam.jpeg");
     if (QFile::exists(m_settingsfile))
     {
@@ -208,13 +210,10 @@ bool GUI::loadSettings()
         bool resimg = sets.value("CBDS/ResolveImages", false).toBool();
         m_resolveimagesaction->setChecked(resimg);
         m_cbds.getChatModel()->setResolveImages(resimg);
-
+        findChild<QWidget*>("DbgCode")->setFont(sets.value("GUI/CodeFont", QFont()).value<QFont>());
         QString campath = sets.value("GUI/Camimage").toString();
         if (!campath.isEmpty())
             m_quickui.rootContext()->setContextProperty("CamImagePath", QFile::exists(campath) ? QUrl::fromLocalFile(campath) : campath);
-
-        m_cbds.loadViewers();
-
         return true;
     }
     resize(1300,600);
@@ -229,6 +228,7 @@ void GUI::saveSettings()
         sets.setValue("GUI/Scriptfolder", m_lastscriptfolder);
         sets.setValue("GUI/Geometry", saveGeometry());
         sets.setValue("GUI/State", saveState());
+        sets.setValue("GUI/CodeFont", findChild<QWidget *>("DbgCode")->font());
         sets.setValue("CBDS/ClearChatOnStart", m_clearaction->isChecked());
         sets.setValue("CBDS/ResolveImages", m_resolveimagesaction->isChecked());
     }
@@ -239,7 +239,7 @@ void GUI::saveViewers()
 {
     QMessageBox::StandardButton proceed = QMessageBox::Yes;
     QFile f(QApplication::applicationDirPath() + "/Viewers.json");
-    if (f.exists(QApplication::applicationDirPath() + "/Viewers.json"))
+    if (f.exists())
         proceed = QMessageBox::question(this, "Warning", "This will override \"" + f.fileName() + "\". \n Proceed?", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
     if (proceed == QMessageBox::Yes)
         m_cbds.saveViewers();
