@@ -32,6 +32,9 @@ public:
     //! Resets the model with the viewers provided. @warning Some names are reserved and duplicates aren't allowed. Viewers that fail those restrictions won't be added and parented.
     void populate(QList<Viewer*> l);
 
+    //! Returns a QList of all viewers.
+    QList<Viewer *> viewers() const {return m_viewers;}
+
 private:
     QList<Viewer *> m_viewers;
 

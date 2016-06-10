@@ -8,20 +8,7 @@ CBObjectImpl::CBObjectImpl(QScriptEngine *e, QObject *parent) : CBObjectBase(e, 
 void CBObjectImpl::drawPanel()
 {
     if (m_drawpanelfunction.isFunction())
-    {
-        QScriptValue ret = m_drawpanelfunction.call();
-        if (!ret.isError())
-        {
-            QVariant v = ret.toVariant();
-            if (engine() && !ret.isUndefined() && (QStringList() << "3_rows_of_labels" << "3_rows_11_21_31" << "3_rows_12_21_31" << "3_rows_12_22_31").indexOf(v.toMap().value("template").toString()) == -1)
-                    context()->throwError(QScriptContext::ReferenceError, "cb.onDrawPanel(): Unknown template: " + v.toMap().value("template").toString());
-            if (v == m_lastdraw)
-                emit warning("cb.drawPanel(): Called without any data changed. You just sent a completely useless command to 150000 viewers. And no, please don't ask me why CB isn't filtering it (last time i checked).");
-            else
-                emit drawPanelRequest(v);
-            m_lastdraw = v;
-        }
-    }
+        emit drawPanelRequest();
 }
 
 void CBObjectImpl::limitCam_start(const QString &message, const QScriptValue &allowed_users)
@@ -208,6 +195,17 @@ bool CBObjectImpl::callTipFunction(QScriptValue tip)
     return true;
 }
 
+QVariant CBObjectImpl::callDrawPanelFunction(QScriptValue user)
+{
+    if (m_drawpanelfunction.isFunction())
+    {
+        QScriptValue ret = m_drawpanelfunction.call(QScriptValue(), QScriptValueList() << user);
+        if (!ret.isError())
+            return ret.toVariant();
+    }
+    return QVariant();
+}
+
 QVariant CBObjectImpl::getTipOptions()
 {
     if (m_tipoptionsfunction.isFunction())
@@ -230,8 +228,6 @@ void CBObjectImpl::reset()
     limitCam_stop();
     limitCam_removeAllUsers();
     m_timedfunctions.clear();
-    m_lastdraw = QVariant();
-    emit drawPanelRequest(QVariant());
     m_tipfunction = m_messagefunction = m_enterfunction = m_leavefunction = m_drawpanelfunction = m_tipoptionsfunction = QScriptValue(QScriptValue::UndefinedValue);
     m_settings = m_engine->newObject();
     m_settings_choices = m_engine->newArray();

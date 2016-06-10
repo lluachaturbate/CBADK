@@ -13,6 +13,7 @@ CBDS::CBDS(QObject *parent) : QObject(parent)
     connect(m_cbo, &CBObjectImpl::changeRoomSubject, this, &CBDS::onRoomSubjectChanged);
     connect(m_cbo, &CBObjectImpl::sendNotice, this, &CBDS::onAppNotice);
     connect(m_cbo, &CBObjectImpl::limitCamAccessChanged, this, &CBDS::onLimitCamAccessChanged);
+    connect(m_cbo, &CBObjectImpl::drawPanelRequest, this, &CBDS::onDrawPanel);
     connect(&m_debugger, &QScriptEngineDebugger::evaluationSuspended, m_cbo, &CBObjectImpl::pauseTimers);
     connect(&m_debugger, &QScriptEngineDebugger::evaluationResumed, m_cbo, &CBObjectImpl::resumeTimers);
 }
@@ -59,6 +60,7 @@ bool CBDS::startApp(const QString &filename, const QVariant &settings)
         QString appcode(f.readAll());
         f.close();
         m_cbo->reset();
+        m_lastdraw = QVariantMap();
         m_engine.collectGarbage();
         if (settings.isValid())
             m_cbo->setSettings(m_engine.toScriptValue(settings));
@@ -129,6 +131,11 @@ void CBDS::parseViewerData(const QVariantList &data)
             (*i)->deleteLater();
         }
     }
+}
+
+QVariant CBDS::getViewerPanel(Viewer *v)
+{
+    return v ? m_cbo->callDrawPanelFunction(createViewerValue(v)) : QVariant();
 }
 
 Viewer *CBDS::connectViewer(Viewer *v)
@@ -223,6 +230,22 @@ void CBDS::onLeave()
     Viewer *v = qobject_cast<Viewer *>(sender());
     if (v)
         m_cbo->callLeaveFunction(createViewerValue(v));
+}
+
+void CBDS::onDrawPanel()
+{
+    QVariantMap m;
+    QList<Viewer *> viewers = m_viewers.viewers();
+    for (auto i = viewers.constBegin(); i != viewers.constEnd(); i++)
+        m.insert((*i)->getName(), getViewerPanel((*i)));
+
+    if (m_lastdraw == m)
+        m_cbo->warning("cb.drawPanel(): Called without any data changed. You just sent a completely useless command to 150000 viewers. And no, please don't ask me why CB isn't filtering it (last time i checked).");
+    else
+    {
+        m_lastdraw = m;
+        emit updatePanel(m);
+    }
 }
 
 void CBDS::onAppNotice(const QString &message, const QString &to_user, const QString &background, const QString &foreground, const QString &weight, const QString &to_group)

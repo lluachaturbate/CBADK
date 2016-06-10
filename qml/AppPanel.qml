@@ -8,18 +8,14 @@ Rectangle {
 
     property var drawobject: ({});
 
-    function drawPanel(obj) {
-        drawobject = obj ? obj : {};
-        applines.state = drawobject.template ? drawobject.template : "";
-    }
-
-    Connections {target: backend.cb; onDrawPanelRequest: drawPanel(object);}
+    Connections {target: backend; onUpdatePanel: drawobject = object[uiroot.currentViewer.name];}
 
 
     ColumnLayout {
         id: applines;
         anchors {fill: parent;}
         spacing: 0;
+        state: drawobject ? drawobject.template ? drawobject.template : "" : "";
 
         states: [
             State {
@@ -50,9 +46,10 @@ Rectangle {
 
         ]
 
+
         Rectangle {
             id: line1;
-            color: drawobject.row1_value ? "#d5ebf8" : "white";
+            color: drawobject ? drawobject.row1_value ? "#d5ebf8" : "white" : "white";
             width: parent.width;
             height: parent.height / 3;
 
@@ -61,19 +58,19 @@ Rectangle {
                 anchors {top: parent.top; bottom: parent.bottom; left: parent.left; right: t12.left; rightMargin: 5;}
                 verticalAlignment: Text.AlignVCenter;
                 horizontalAlignment: Text.AlignRight;
-                text: drawobject.row1_label ? drawobject.row1_label : ""
+                text: drawobject ? drawobject.row1_label ? drawobject.row1_label : "" : "";
             }
             Text {
                 id: t12;
                 anchors {top: parent.top; bottom: parent.bottom; left: parent.left; right: parent.right;}
                 verticalAlignment: Text.AlignVCenter;
-                text: drawobject.row1_value ? drawobject.row1_value : ""
+                text: drawobject ? drawobject.row1_value ? drawobject.row1_value : "" : "";
             }
         }
 
         Rectangle {
             id: line2;
-            color: drawobject.row2_value ? "#f2f9fd" : "white";
+            color: drawobject ? drawobject.row2_value ? "#f2f9fd" : "white" : "white";
             width: parent.width;
             height: parent.height / 3;
 
@@ -82,19 +79,19 @@ Rectangle {
                 anchors {top: parent.top; bottom: parent.bottom; left: parent.left; right: t22.left; rightMargin: 5;}
                 verticalAlignment: Text.AlignVCenter;
                 horizontalAlignment: Text.AlignRight;
-                text: drawobject.row2_label ? drawobject.row2_label : ""
+                text: drawobject ? drawobject.row2_label ? drawobject.row2_label : "" : "";
             }
             Text {
                 id: t22;
                 anchors {top: parent.top; bottom: parent.bottom; left: parent.left; right: parent.right;}
                 verticalAlignment: Text.AlignVCenter;
-                text: drawobject.row2_value ? drawobject.row2_value : ""
+                text: drawobject ? drawobject.row2_value ? drawobject.row2_value : "" : "";
             }
         }
 
         Rectangle {
             id: line3;
-            color: drawobject.row3_value ? "#d5ebf8" : "white";
+            color: drawobject ? drawobject.row3_value ? "#d5ebf8" : "white" : "white";
             width: parent.width;
             height: parent.height / 3;
 
@@ -103,13 +100,13 @@ Rectangle {
                 anchors {top: parent.top; bottom: parent.bottom; left: parent.left; right: t32.left; rightMargin: 5;}
                 verticalAlignment: Text.AlignVCenter;
                 horizontalAlignment: Text.AlignRight;
-                text: drawobject.row3_label ? drawobject.row3_label : ""
+                text: drawobject ? drawobject.row3_label ? drawobject.row3_label : "" : "";
             }
             Text {
                 id: t32;
                 anchors {top: parent.top; bottom: parent.bottom; left: parent.left; right: parent.right;}
                 verticalAlignment: Text.AlignVCenter;
-                text: drawobject.row3_value ? drawobject.row3_value : ""
+                text: drawobject ? drawobject.row3_value ? drawobject.row3_value : "" : "";
             }
         }
     }

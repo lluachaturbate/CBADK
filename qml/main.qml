@@ -51,6 +51,7 @@ Rectangle {
                 cfan.checked = uiroot.currentViewer.fanclub;
                 ctok.checked = uiroot.currentViewer.has_tokens;
                 backend.chat.setViewer(uiroot.currentViewer);
+                camrect.apppanel.drawobject = backend.getViewerPanel(uiroot.currentViewer);
             }
             Connections {target: backend.viewers; onModelReset: {viewercombo.currentIndex = -1; viewercombo.currentIndex = viewercombo.currentIndex = 0;}}
         }

@@ -40,6 +40,9 @@ public:
     //! Populates the ViewerModel with Viewers created from the json data.
     void parseViewerData(const QVariantList& data);
 
+    //! @sa CBObjectImpl::callDrawPanelFunction()
+    Q_INVOKABLE QVariant getViewerPanel(Viewer* v);
+
     ViewerModel *getViewerModel() {return &m_viewers;}
     ViewerChatModel *getViewerChatModel() {return &m_viewerchat;}
     ChatModel *getChatModel() {return &m_chat;}
@@ -55,6 +58,7 @@ private:
     ViewerChatModel m_viewerchat;
     bool m_clearchatonstart = false;
     QString m_roomowner = "llua";
+    QVariantMap m_lastdraw;
 
     Viewer* connectViewer(Viewer * v);
     QScriptValue createViewerValue(Viewer *v);
@@ -64,6 +68,8 @@ private:
 signals:
     //! Emitted on any error thats not scriptrelated.
     void error(QString msg);
+    //! Emitted when the panel should be updated. object is a map of username and their return object from callDrawPanelFunction().
+    void updatePanel(QVariantMap object);
 
 private slots:
     //! Creates a tip object and calls CBObjectImpl::callTipFunction(). @warning needs Viewer* as sender()
@@ -74,6 +80,8 @@ private slots:
     void onEnter();
     //! Creates a leave object and calls CBObjectImpl::callLeaveFunction(). @warning needs Viewer* as sender()
     void onLeave();
+    //! Calls CBObjectImpl::callDrawPanelFunction() with a viewer object for every viewer and emits updatePanel() with the results.
+    void onDrawPanel();
     //! Adds a notice ChatLine to the model.
     void onAppNotice(const QString &message, const QString &to_user ="", const QString &background = "#FFFFFF", const QString &foreground = "#000000", const QString &weight="normal", const QString &to_group ="");
     //! Adds a logmessage ChatLine to the model.

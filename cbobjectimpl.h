@@ -81,6 +81,9 @@ public:
     //! Calls the scriptfunction defined in onTip(). @returns false on script error, otherwise true.
     bool callTipFunction(QScriptValue tip);
 
+    //! Calls the scriptfunction defined in onDrawPanel(). @returns The object as QVariant or an invalid on error.
+    QVariant callDrawPanelFunction(QScriptValue user);
+
     //! Calls the scriptfunction defined in tipOptions() and returns the object as QVariant.
     Q_INVOKABLE QVariant getTipOptions();
 
@@ -91,7 +94,7 @@ private:
     QSet<QString> m_limitcam_allowed;
     bool m_limitcam_active = false;
     QHash<QTimer *, QScriptValue> m_timedfunctions;
-    QVariant m_lastdraw;
+    //TODO QVariant m_lastdraw;
     QScriptValue m_tipfunction, m_messagefunction, m_enterfunction, m_leavefunction, m_drawpanelfunction, m_tipoptionsfunction;
     QScriptEngine *m_engine;
 
@@ -102,8 +105,8 @@ signals:
     void limitCamAccessChanged(QString username, bool access);
     //! Emitted when log is called.
     void cbLog(QString msg);
-    //! Emitted after a call to drawPanel with the returned object from getTipOptions.
-    void drawPanelRequest(QVariant object);
+    //! Emitted after a call to drawPanel(). @sa callDrawPanelFunction()
+    void drawPanelRequest();
 
 private slots:
     //! Removes the item from the QHash, calls the scriptfunction and deletes the QTimer. @warning Sender has to be a QTimer created by setTimeout().

@@ -10,6 +10,7 @@ Rectangle {
     border.width: 5;
     radius: 5;
 
+    property alias apppanel: panel;
 
     Rectangle {
         id: roomsubjectrect;
