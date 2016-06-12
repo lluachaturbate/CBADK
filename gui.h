@@ -62,7 +62,7 @@ private:
     //! Creates the dockwidgets mostly from QScriptEngineDebugger.
     void createDockWidgets();
 
-private slots:
+public slots:
     //! If sender() has a filename property loads it, otherwise opens a filedialog.
     void onLoadApp();
     //! Saves Viewers to Viewers.json.
