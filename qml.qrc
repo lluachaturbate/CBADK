@@ -7,5 +7,6 @@
         <file>qml/NewViewerPop.qml</file>
         <file>qml/ChatRect.qml</file>
         <file>qml/cam.jpeg</file>
+        <file>CBADK.ico</file>
     </qresource>
 </RCC>

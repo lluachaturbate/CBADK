@@ -7,8 +7,11 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QJsonDocument>
+#include <QScrollArea>
+#include <QDesktopWidget>
+#include <QApplication>
 
-//! Dialog to get app settings from user.
+//! Dialog to get app settings from user. @todo Make something better, i just were lazy.
 class SettingsDialog : public QDialog
 {
     Q_OBJECT
@@ -108,7 +111,18 @@ public:
         connect(reject, &QPushButton::clicked, this, &SettingsDialog::reject);
         l->addRow(reject, m_startbutton);
         checkRequired();
-        setLayout(l);
+
+        QScrollArea *scrollarea = new QScrollArea(this);
+        QWidget *conw = new QWidget(this);
+        conw->setLayout(l);
+        scrollarea->setWidget(conw);
+        QHBoxLayout *hb = new QHBoxLayout(this);
+        hb->setMargin(0);
+        hb->addWidget(scrollarea);
+        setLayout(hb);
+        QDesktopWidget *dw = QApplication::desktop();
+        QSize as = dw->availableGeometry().size();
+        resize(qMin(as.width() -50, l->sizeHint().width() -50), qMin(as.height() -50, l->sizeHint().height()) -50);
     }
 
 

@@ -94,7 +94,6 @@ private:
     QSet<QString> m_limitcam_allowed;
     bool m_limitcam_active = false;
     QHash<QTimer *, QScriptValue> m_timedfunctions;
-    //TODO QVariant m_lastdraw;
     QScriptValue m_tipfunction, m_messagefunction, m_enterfunction, m_leavefunction, m_drawpanelfunction, m_tipoptionsfunction;
     QScriptEngine *m_engine;
 

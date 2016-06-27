@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QSortFilterProxyModel>
+#include <QApplication>
+#include <QClipboard>
 
 #include "chatmodel.h"
 
@@ -19,6 +21,17 @@ public:
         m_viewer = v;
         invalidateFilter();
     }
+
+    //! Calls Chatmodel::clear of the sourceModel().
+    Q_INVOKABLE void clearChat()
+    {
+        ChatModel* c = qobject_cast<ChatModel *>(sourceModel());
+        if (c)
+            c->clear();
+    }
+
+    //! Copies given string to the clipboard.
+    Q_INVOKABLE void copyToClipboard(const QString& string) const {QApplication::clipboard()->setText(string);}
 
 protected:
     //! Reimplemented: Returns Viewer::canRead() to filter ChatLines that should be hidden.

@@ -157,7 +157,6 @@ bool CBObjectImpl::callEnterFunction(QScriptValue event)
 {
     if (m_enterfunction.isFunction())
         return !m_enterfunction.call(QScriptValue(), QScriptValueList() << event).isError();
-    emit warning("cb.onEnter(): No function to call.");
     return true;
 }
 
@@ -165,7 +164,6 @@ bool CBObjectImpl::callLeaveFunction(QScriptValue event)
 {
     if (m_leavefunction.isFunction())
         return !m_leavefunction.call(QScriptValue(), QScriptValueList() << event).isError();
-    emit warning("cb.onLeave(): No function to call.");
     return true;
 }
 
@@ -177,13 +175,8 @@ bool CBObjectImpl::callMessageFunction(QScriptValue msg)
         if (ret.isError())
             return false;
         if (ret.isUndefined())
-        {
-            //TODO better throw an exception here
             emit warning("cb.onMessage(): You have to return the message object.");
-        }
     }
-    else
-        emit warning("cb.onMessage(): No function to call.");
     return true;
 }
 
@@ -191,7 +184,6 @@ bool CBObjectImpl::callTipFunction(QScriptValue tip)
 {
     if (m_tipfunction.isFunction())
         return !m_tipfunction.call(QScriptValue(), QScriptValueList() << tip).isError();
-    emit warning("cb.onTip(): No function to call.");
     return true;
 }
 

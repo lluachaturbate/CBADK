@@ -2,6 +2,9 @@
 
 CBDS::CBDS(QObject *parent) : QObject(parent)
 {
+    //Fix for the difference in number object
+    m_engine.evaluate("Number.parseInt = parseInt;Number.parseFloat = parseFloat;Number.isNaN = Number.isNaN || function(value) {return typeof value === \"number\" && isNaN(value);}");
+
     m_cbo = new CBObjectImpl(&m_engine, this);
     m_viewerchat.setSourceModel(&m_chat);
     m_debugger.attachTo(&m_engine);

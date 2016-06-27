@@ -13,8 +13,16 @@ class ViewerModel : public QAbstractListModel
 public:
     ViewerModel(QObject *parent = 0);
 
-    //! Reimplemented from QAbstractItemModel: always returns Viewer::getName().
-    QVariant data(const QModelIndex &index, int role) const {Q_UNUSED(role) return m_viewers.at(index.row())->getName();}
+    enum ModelRoles {
+        Name = Qt::UserRole + 100,
+        Moderator,
+        Fanclub,
+        Has_Tokens
+    };
+
+
+    //! Reimplemented from QAbstractItemModel.
+    QVariant data(const QModelIndex &index, int role) const;
     int rowCount(const QModelIndex &parent) const {Q_UNUSED(parent) return m_viewers.size();}
 
     //! Sets parent and adds Viewer to the model. @returns v or Q_NULLPTR if a user with that name already exists. @warning Some names are reserved, in that case Q_NULLPTR is returned.
@@ -24,7 +32,7 @@ public:
     Q_INVOKABLE Viewer* getViewer(const int& idx) const;
 
     //! @returns Viewer* with the given name or Q_NULLPTR if no such Viewer exists.
-    Viewer* getViewerByName(const QString& name) const;
+    Q_INVOKABLE Viewer* getViewerByName(const QString& name) const;
 
     //! @returns a JSON compatible VariantList of all viewers with their non-default values.
     QVariantList serializeViewers() const;
@@ -35,10 +43,18 @@ public:
     //! Returns a QList of all viewers.
     QList<Viewer *> viewers() const {return m_viewers;}
 
+
+protected:
+    QHash<int, QByteArray> roleNames() const;
+
 private:
     QList<Viewer *> m_viewers;
 
     const QSet<QString> m_reserved_names = QSet<QString>() << "" << "red" << "green" << "orange" << "lightblue" << "darkblue" << "lightpurple" << "darkpurple" << "grey" << "cblog" << "roomsubject";
+
+private slots:
+    //! Emits dataChanged() if a viewer's values change.
+    void viewerDataChanged();
 };
 
 #endif // VIEWERMODEL_H

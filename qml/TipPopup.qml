@@ -74,7 +74,7 @@ Rectangle {
             Layout.alignment: Qt.AlignRight;
             width: t.contentWidth + 20;
             height: 25;
-            color: "#f47321";
+            color: uiroot.currentViewer.roomowner ? "grey" : "#f47321";
             radius: 3;
 
             Text {
@@ -85,7 +85,7 @@ Rectangle {
             }
             MouseArea {
                 anchors.fill: parent;
-                onClicked: tippopup.accept();
+                onClicked: uiroot.currentViewer.roomowner ? tippopup.showHide() : tippopup.accept();
             }
         }
     }

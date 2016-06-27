@@ -4,6 +4,19 @@ ViewerModel::ViewerModel(QObject *parent) : QAbstractListModel(parent)
 {
 }
 
+QVariant ViewerModel::data(const QModelIndex &index, int role) const
+{
+    switch (role)
+    {
+        case Qt::DisplayRole:
+        case Name: return m_viewers.at(index.row())->getName();
+        case Moderator: return m_viewers.at(index.row())->isModerator();
+        case Fanclub: return m_viewers.at(index.row())->isFanclubmember();
+        case Has_Tokens: return m_viewers.at(index.row())->hasTokens();
+    }
+    return QVariant();
+}
+
 Viewer* ViewerModel::addViewer(Viewer* v)
 {
     if (m_reserved_names.contains(v->getName()))
@@ -15,6 +28,7 @@ Viewer* ViewerModel::addViewer(Viewer* v)
     beginInsertRows(QModelIndex(), m_viewers.size(), m_viewers.size());
     v->setParent(this);
     m_viewers << v;
+    connect(v, &Viewer::dataChanged, this, &ViewerModel::viewerDataChanged);
     endInsertRows();
     return v;
 }
@@ -77,6 +91,31 @@ void ViewerModel::populate(QList<Viewer*> l)
         names << (*i)->getName();
         (*i)->setParent(this);
         m_viewers << (*i);
+        connect((*i), &Viewer::dataChanged, this, &ViewerModel::viewerDataChanged);
     }
     endResetModel();
+}
+
+QHash<int, QByteArray> ViewerModel::roleNames() const
+{
+    QHash<int, QByteArray> roles;
+    roles[Name] = "name";
+    roles[Moderator] = "moderator";
+    roles[Fanclub] = "fanclub";
+    roles[Has_Tokens] = "has_tokens";
+    return roles;
+}
+
+void ViewerModel::viewerDataChanged()
+{
+    Viewer* v = qobject_cast<Viewer *>(sender());
+    if (v)
+    {
+        int i = m_viewers.indexOf(v);
+        if (i != -1)
+        {
+            QModelIndex idx = createIndex(m_viewers.indexOf(v), 0);
+            emit dataChanged(idx, idx);
+        }
+    }
 }

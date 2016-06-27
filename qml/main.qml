@@ -13,6 +13,7 @@ Rectangle {
     color: "lightgrey";
 
     property var currentViewer;
+    property alias currentIndex: viewercombo.currentIndex;
 
 
 
@@ -43,7 +44,7 @@ Rectangle {
         ComboBox {
             id: viewercombo;
             Layout.fillWidth: true;
-            textRole: "display";
+            textRole: "name";
             model: backend.viewers;
             onCurrentIndexChanged: {
                 uiroot.currentViewer = backend.viewers.getViewer(viewercombo.currentIndex);
@@ -55,7 +56,7 @@ Rectangle {
             }
             Connections {target: backend.viewers; onModelReset: {viewercombo.currentIndex = -1; viewercombo.currentIndex = viewercombo.currentIndex = 0;}}
         }
-        Button{text: "+"; onClicked: newviewerpopup.showHide();}
+        Button{text: "+"; onClicked: newviewerpopup.showHide(); Layout.maximumWidth: 20;}
     }
 
     NewViewerPop {

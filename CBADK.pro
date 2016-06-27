@@ -29,3 +29,5 @@ HEADERS  += gui.h \
 
 RESOURCES += \
     qml.qrc
+
+win32: RC_ICONS = CBADK.ico

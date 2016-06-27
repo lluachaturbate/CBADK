@@ -13,6 +13,7 @@ class Viewer : public QObject
     Q_PROPERTY(bool has_tokens READ hasTokens WRITE setHasTokens NOTIFY dataChanged)
     Q_PROPERTY(QString gender READ getGender WRITE setGender NOTIFY dataChanged)
     Q_PROPERTY(int tipped READ getTipped NOTIFY dataChanged)
+    Q_PROPERTY(QString usercolor READ getUserColor NOTIFY dataChanged)
     Q_PROPERTY(bool limitcamaccess READ hasLimitCamAccess NOTIFY dataChanged)
     Q_PROPERTY(bool roomowner READ isRoomOwner NOTIFY dataChanged)
 public:

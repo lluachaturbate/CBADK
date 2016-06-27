@@ -16,6 +16,7 @@ Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
 GUI::GUI(QWidget *parent)
     : QMainWindow(parent)
 {
+    setWindowIcon(QIcon(":/CBADK.ico"));
     connect(&m_cbds, &CBDS::error, [&] (QString msg) {QMessageBox::critical(this,"Error", msg, QMessageBox::Close);});
 
 #ifdef QT_STATIC
@@ -312,33 +313,50 @@ void GUI::createDockWidgets()
     addDockWidget(Qt::BottomDockWidgetArea, dconsole);
     m_viewmenu->addAction(dconsole->toggleViewAction());
 
-    m_warningdock = new QDockWidget("Warnings", this);
-    m_warningdock->setProperty("orgtitle", m_warningdock->windowTitle());
-    m_warningdock->setProperty("unread", 0);
-    m_warningdock->setWidget(new QTextEdit(m_warningdock));
-    m_warningdock->setObjectName("DockWarnings");
-    addDockWidget(Qt::BottomDockWidgetArea, m_warningdock);
-    m_viewmenu->addAction(m_warningdock->toggleViewAction());
-    connect(m_cbds.getCBObject(), &CBObjectImpl::warning, [&] (QString msg) {
-        qobject_cast<QTextEdit *>(m_warningdock->widget())->append(msg);
-        if (!m_warningdock->property("selected").toBool())
+    QDockWidget *dwarning = new QDockWidget("Warnings", this);
+    dwarning->setProperty("orgtitle", dwarning->windowTitle());
+    dwarning->setProperty("unread", 0);
+    QTextEdit* warningtext = new QTextEdit(dwarning);
+    //m_warningdock->setWidget(new QTextEdit(m_warningdock));
+    dwarning->setWidget(warningtext);
+    dwarning->setObjectName("DockWarnings");
+    addDockWidget(Qt::BottomDockWidgetArea, dwarning);
+    m_viewmenu->addAction(dwarning->toggleViewAction());
+    connect(m_cbds.getCBObject(), &CBObjectImpl::warning, [=] (QString msg) {
+        warningtext->append(msg);
+        if (!dwarning->property("selected").toBool())
         {
-            int count =  m_warningdock->property("unread").toInt() +1;
-            m_warningdock->setProperty("unread", count);
-            m_warningdock->setWindowTitle(QString("%1 (%2)").arg(m_warningdock->property("orgtitle").toString()).arg(count));
+            int count =  dwarning->property("unread").toInt() +1;
+            dwarning->setProperty("unread", count);
+            dwarning->setWindowTitle(QString("%1 (%2)").arg(dwarning->property("orgtitle").toString()).arg(count));
         }
     });
-    connect(m_warningdock, &QDockWidget::visibilityChanged, [&] (bool visible) {
-        m_warningdock->setProperty("selected", visible);
-        m_warningdock->setProperty("unread", 0);
-        m_warningdock->setWindowTitle(m_warningdock->property("orgtitle").toString());
+    connect(dwarning, &QDockWidget::visibilityChanged, [=] (bool visible) {
+        dwarning->setProperty("selected", visible);
+        dwarning->setProperty("unread", 0);
+        dwarning->setWindowTitle(dwarning->property("orgtitle").toString());
+    });
+    connect(this, &GUI::aboutToLoadApp, [=] () {
+        warningtext->clear();
+        dwarning->setProperty("unread", 0);
+        dwarning->setWindowTitle(dwarning->property("orgtitle").toString());
     });
 
+    QDockWidget *dcblog = new QDockWidget("CB log", this);
+    QTextEdit *cblogt = new QTextEdit(dcblog);
+    connect(m_cbds.getCBObject(), &CBObjectImpl::cbLog, cblogt, &QTextEdit::append);
+    connect(this, &GUI::aboutToLoadApp, cblogt, &QTextEdit::clear);
+    dcblog->setWidget(cblogt);
+    dcblog->setObjectName("CBLog");
+    addDockWidget(Qt::BottomDockWidgetArea, dcblog);
+    m_viewmenu->addAction(dcblog->toggleViewAction());
+
     tabifyDockWidget(ddebugoutput, derrorlog);
-    tabifyDockWidget(derrorlog, m_warningdock);
-    tabifyDockWidget(m_warningdock, dcode);
+    tabifyDockWidget(derrorlog, dwarning);
+    tabifyDockWidget(dwarning, dcode);
     tabifyDockWidget(dcode, dconsole);
     tabifyDockWidget(dlocals, dstack);
+    tabifyDockWidget(dconsole, dcblog);
 }
 
 void GUI::onLoadApp()
@@ -352,9 +370,7 @@ void GUI::onLoadApp()
 
     if (!filename.isEmpty())
     {
-        qobject_cast<QTextEdit *>(m_warningdock->widget())->clear();
-        m_warningdock->setProperty("unread", 0);
-        m_warningdock->setWindowTitle(m_warningdock->property("orgtitle").toString());
+        emit aboutToLoadApp();
         QVariant settings = m_cbds.getSettingsFromScript(filename);
         if (settings.isValid())
         {

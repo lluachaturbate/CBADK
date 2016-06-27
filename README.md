@@ -4,11 +4,11 @@ App Dev Kit for Chaturbate
 
 #### What is this?
 Well the name says it all: This tool is supposed to help develop and test Apps for CB.
-I decided to not attempt to make a website copy of CB and build features around it, instead i did my own implementation to realize feautures that i think are important.
+I decided to not attempt to make a website copy of CB and build features around it, instead i did my own implementation to realize features that i think are important.
 Unfortunately the CB API didn't gave me much to work with, so i filled the gaps with tests and guesswork.
 
 #### Who is this for?
-Originally for me since the old ADK linked in the CB API is outdated and misses a lot of feautures.
+Originally for me since the old ADK linked in the CB API is outdated and misses a lot of features.
 I make barely everything i code open source so others can profit from it.
 Doesn't matter if you are a beginner or a pro, you should be able to work fine with this.
 

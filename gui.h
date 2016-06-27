@@ -42,7 +42,6 @@ private:
     QMenu* m_reloadmenu, *m_viewmenu;
     QAction* m_clearaction;
     QAction* m_resolveimagesaction;
-    QDockWidget* m_warningdock;
     QStringList m_lastapps;
     QHash<QString, QPair<QVariant, QVariant> > m_previousstartoptions;
     bool m_save = true;
@@ -61,6 +60,10 @@ private:
 
     //! Creates the dockwidgets mostly from QScriptEngineDebugger.
     void createDockWidgets();
+
+
+signals:
+    void aboutToLoadApp();
 
 public slots:
     //! If sender() has a filename property loads it, otherwise opens a filedialog.
