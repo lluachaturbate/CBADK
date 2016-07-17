@@ -18,6 +18,14 @@ CBDS::CBDS(QObject *parent) : QObject(parent)
     connect(m_cbo, &CBObjectImpl::limitCamAccessChanged, this, &CBDS::onLimitCamAccessChanged);
     connect(m_cbo, &CBObjectImpl::drawPanelRequest, this, &CBDS::onDrawPanel);
     connect(&m_debugger, &QScriptEngineDebugger::evaluationSuspended, m_cbo, &CBObjectImpl::pauseTimers);
+    connect(&m_debugger, &QScriptEngineDebugger::evaluationSuspended, [&] ()
+    {
+        if (m_resumeonnextsuspension)
+        {
+            m_debugger.action(QScriptEngineDebugger::ContinueAction)->trigger();
+            m_resumeonnextsuspension = false;
+        }
+    });
     connect(&m_debugger, &QScriptEngineDebugger::evaluationResumed, m_cbo, &CBObjectImpl::resumeTimers);
 }
 
@@ -67,6 +75,7 @@ bool CBDS::startApp(const QString &filename, const QVariant &settings)
         m_engine.collectGarbage();
         if (settings.isValid())
             m_cbo->setSettings(m_engine.toScriptValue(settings));
+        engageDebugger();
         if (!m_engine.evaluate(appcode, QFileInfo(filename).fileName()).isError())
         {
             if (m_clearchatonstart)

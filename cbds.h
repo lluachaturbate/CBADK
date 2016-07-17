@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QApplication>
+#include <QAction>
 
 #include "chatmodel.h"
 #include "viewermodel.h"
@@ -56,7 +57,7 @@ private:
     ViewerModel m_viewers;
     ChatModel m_chat;
     ViewerChatModel m_viewerchat;
-    bool m_clearchatonstart = false;
+    bool m_clearchatonstart = false, m_resumeonnextsuspension = false;
     QString m_roomowner = "llua";
     QVariantMap m_lastdraw;
 
@@ -64,6 +65,7 @@ private:
     QScriptValue createViewerValue(Viewer *v);
 
     void setRoomOwner(const QString& slug) {m_roomowner = slug; m_cbo->setRoomSlug(slug);}
+    void engageDebugger() {m_debugger.action(QScriptEngineDebugger::InterruptAction)->trigger(); m_resumeonnextsuspension = true;}
 
 signals:
     //! Emitted on any error thats not scriptrelated.

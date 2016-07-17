@@ -1,40 +1,10 @@
 #include "gui.h"
 
-//Qt seems to have problems with plugin integration if statically compiled.
-//I didn't look into the issue but grabbed this somewhere from the web, hope that fixes it.
-#ifdef QT_STATIC
-#include <QtPlugin>
-#include <QQmlExtensionPlugin>
-
-Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
-Q_IMPORT_PLUGIN(QtQuick2Plugin)
-Q_IMPORT_PLUGIN(QtQuickControlsPlugin)
-Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)
-Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
-#endif
-
 GUI::GUI(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowIcon(QIcon(":/CBADK.ico"));
     connect(&m_cbds, &CBDS::error, [&] (QString msg) {QMessageBox::critical(this,"Error", msg, QMessageBox::Close);});
-
-#ifdef QT_STATIC
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2Plugin().instance())->registerTypes("QtQuick");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuickControlsPlugin().instance())->registerTypes("QtQuick.Controls");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuickControlsPlugin().instance())->registerTypes("QtQuick.Controls.Private");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuickControlsPlugin().instance())->registerTypes("QtQuick.Controls.Styles");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuickLayoutsPlugin().instance())->registerTypes("QtQuick.Layouts");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2WindowPlugin().instance())->registerTypes("QtQuick.Window");
-
-    QQmlEngine *e = qobject_cast<QQmlEngine *>(m_quickui.engine());
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2Plugin().instance())->initializeEngine(e, "QtQuick");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuickControlsPlugin().instance())->initializeEngine(e, "QtQuick.Controls");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuickControlsPlugin().instance())->initializeEngine(e, "QtQuick.Private");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuickControlsPlugin().instance())->initializeEngine(e, "QtQuick.Styles");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuickLayoutsPlugin().instance())->initializeEngine(e, "QtQuick.Layouts");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2WindowPlugin().instance())->initializeEngine(e, "QtQuick.Window");
-#endif
 
     m_quickui.engine()->rootContext()->setContextProperty("backend", &m_cbds);
     m_quickui.setResizeMode(QQuickWidget::SizeRootObjectToView);
@@ -215,6 +185,11 @@ bool GUI::loadSettings()
         QString campath = sets.value("GUI/Camimage").toString();
         if (!campath.isEmpty())
             m_quickui.rootContext()->setContextProperty("CamImagePath", QFile::exists(campath) ? QUrl::fromLocalFile(campath) : campath);
+        QStringList lastapps = sets.value("GUI/LastApps").toStringList();
+        if (!lastapps.isEmpty())
+            for (auto i = lastapps.constBegin(); i != lastapps.constEnd(); ++i)
+                if (QFile::exists((*i)))
+                    addToReloadMenu((*i));
         return true;
     }
     resize(1300,600);
@@ -232,6 +207,14 @@ void GUI::saveSettings()
         sets.setValue("GUI/CodeFont", findChild<QWidget *>("DbgCode")->font());
         sets.setValue("CBDS/ClearChatOnStart", m_clearaction->isChecked());
         sets.setValue("CBDS/ResolveImages", m_resolveimagesaction->isChecked());
+        QList<QAction *> loadactions = m_reloadmenu->actions();
+        if (!loadactions.isEmpty())
+        {
+            QStringList lastapps;
+            for (int i = qMin(4, loadactions.size() -1); i >= 0; --i)
+                lastapps.append(loadactions.at(i)->property("filename").toString());
+            sets.setValue("GUI/LastApps", lastapps);
+        }
     }
 }
 
@@ -317,7 +300,6 @@ void GUI::createDockWidgets()
     dwarning->setProperty("orgtitle", dwarning->windowTitle());
     dwarning->setProperty("unread", 0);
     QTextEdit* warningtext = new QTextEdit(dwarning);
-    //m_warningdock->setWidget(new QTextEdit(m_warningdock));
     dwarning->setWidget(warningtext);
     dwarning->setObjectName("DockWarnings");
     addDockWidget(Qt::BottomDockWidgetArea, dwarning);
@@ -372,11 +354,12 @@ void GUI::onLoadApp()
     {
         emit aboutToLoadApp();
         QVariant settings = m_cbds.getSettingsFromScript(filename);
+
         if (settings.isValid())
         {
             if (!settings.toList().isEmpty())
             {
-                SettingsDialog s(settings, settings == m_previousstartoptions.value(filename).first ? m_previousstartoptions.value(filename).second : QVariant(), this);
+                LaunchPage s(settings, settings == m_previousstartoptions.value(filename).first ? m_previousstartoptions.value(filename).second : QVariant(), this);
                 if (s.exec() == QDialog::Accepted)
                 {
                     QVariant sets = s.getSettings();

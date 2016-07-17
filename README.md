@@ -34,9 +34,9 @@ Don't hesitate to report bugs, make feature/pull requests or [mail me](mailto:ll
 
 
 #### Compile
-It is completely portable and only depends on [Qt](https://www.qt.io/) to build.
+It is completely portable and only depends on [Qt](https://www.qt.io/)(5.7) to build.
 ```
 qmake && make
 ```
  * Windows 
-  * Since Windows-people usually don't like to compile things i put up a release file. It's just **blindly** cross compiled with MXE and never tested. If it doesn't work just get Qt and compile it yourself, it's maybe 10clicks and a coffee. There is no knowledge of C++ required to complie and run a project (a chimpanse can do it).
+  * Since Windows-people usually don't like to compile things i put up a [release file](https://github.com/lluachaturbate/CBADK/releases/). It's just **blindly** cross compiled with MXE and never tested. If it doesn't work just get Qt and compile it yourself, it's maybe 10clicks and a coffee. There is no knowledge of C++ required to complie and run a project (a chimpanse can do it).

@@ -16,29 +16,17 @@ public:
     ViewerChatModel(QObject *parent = 0) : QSortFilterProxyModel(parent) {}
 
     //! Sets the current Viewer.
-    Q_INVOKABLE void setViewer(Viewer* v)
-    {
-        m_viewer = v;
-        invalidateFilter();
-    }
+    Q_INVOKABLE void setViewer(Viewer* v);
 
     //! Calls Chatmodel::clear of the sourceModel().
-    Q_INVOKABLE void clearChat()
-    {
-        ChatModel* c = qobject_cast<ChatModel *>(sourceModel());
-        if (c)
-            c->clear();
-    }
+    Q_INVOKABLE void clearChat();
 
     //! Copies given string to the clipboard.
-    Q_INVOKABLE void copyToClipboard(const QString& string) const {QApplication::clipboard()->setText(string);}
+    Q_INVOKABLE void copyToClipboard(const QString& string) const;
 
 protected:
     //! Reimplemented: Returns Viewer::canRead() to filter ChatLines that should be hidden.
-    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
-    {
-        return m_viewer && m_viewer->canRead(sourceModel()->index(source_row,0, source_parent).data(ChatModel::To).toString());
-    }
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
 
 private:
     Viewer* m_viewer;

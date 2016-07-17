@@ -18,9 +18,11 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QFontDialog>
+#include <QFormLayout>
+#include <QLineEdit>
 
 #include "cbds.h"
-#include "settingsdialog.h"
+#include "launchpage.h"
 
 //! The applications main window.
 class GUI : public QMainWindow

@@ -8,5 +8,9 @@
         <file>qml/ChatRect.qml</file>
         <file>qml/cam.jpeg</file>
         <file>CBADK.ico</file>
+        <file>qml/LoadApp.qml</file>
+        <file>qml/choice.qml</file>
+        <file>qml/int.qml</file>
+        <file>qml/str.qml</file>
     </qresource>
 </RCC>

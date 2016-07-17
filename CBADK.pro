@@ -13,7 +13,8 @@ SOURCES += main.cpp\
     chatmodel.cpp \
     viewermodel.cpp \
     cbobjectimpl.cpp \
-    cbds.cpp
+    cbds.cpp \
+    viewerchatmodel.cpp
 
 HEADERS  += gui.h \
     chatline.h \
@@ -25,7 +26,7 @@ HEADERS  += gui.h \
     cbjsobject.h \
     cbds.h \
     viewerchatmodel.h \
-    settingsdialog.h
+    launchpage.h
 
 RESOURCES += \
     qml.qrc
